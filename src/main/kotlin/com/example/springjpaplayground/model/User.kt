@@ -10,6 +10,10 @@ data class User(
     val tags: Set<Tag>,
 )
 
+data class UserSurnameProjection(
+    val surname: String,
+)
+
 fun User.toEntity(): UserEntity {
     val userEntity = UserEntity(id, name = firstName, surname)
     userEntity.tags = tags.mapTo(mutableSetOf()) { it.toEntity(userEntity) }
