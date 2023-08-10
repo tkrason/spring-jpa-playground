@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    application
     id("org.springframework.boot") version "3.1.2"
     id("io.spring.dependency-management") version "1.1.2"
     kotlin("jvm") version "1.9.0"
@@ -11,6 +12,10 @@ plugins {
 
 group = "com.example"
 version = "0.0.1-SNAPSHOT"
+
+application {
+    applicationDefaultJvmArgs += listOf("--enable-preview")
+}
 
 java {
     sourceCompatibility = JavaVersion.VERSION_20
@@ -39,6 +44,10 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
 }
 
+tasks.withType<JavaCompile> {
+    options.compilerArgs.plusAssign("--enable-preview")
+}
+
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs += "-Xjsr305=strict"
@@ -48,6 +57,7 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    jvmArgs("--enable-preview")
 }
 
 noArg {

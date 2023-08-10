@@ -30,4 +30,8 @@ class UserController @Autowired constructor(
 
     @PostMapping("/users")
     fun updateUser(@RequestBody user: User) = userService.updateUserAndUserTags(user)
+
+    @GetMapping("/thread")
+    fun getThreadName(): String =
+        Thread.currentThread().toString() // returns e.g. VirtualThread[#65]/runnable@ForkJoinPool-1-worker-2
 }
