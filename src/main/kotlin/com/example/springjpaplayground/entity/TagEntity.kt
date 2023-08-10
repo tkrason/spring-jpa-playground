@@ -19,8 +19,8 @@ data class TagEntity(
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
     @Enumerated(value = EnumType.STRING)
-    val color: TagColor,
-    val name: String,
+    var color: TagColor,
+    var name: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     val user: UserEntity,

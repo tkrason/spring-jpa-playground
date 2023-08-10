@@ -1,5 +1,6 @@
 package com.example.springjpaplayground.service
 
+import com.example.springjpaplayground.entity.UserEntity
 import com.example.springjpaplayground.model.Tag
 import com.example.springjpaplayground.model.TagColor
 import com.example.springjpaplayground.model.User
@@ -10,6 +11,7 @@ import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.util.UUID
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 class UserService @Autowired constructor(
@@ -56,4 +58,42 @@ class UserService @Autowired constructor(
     // testing view projections, where only subset of data is needed
     // Note: It's view only, Hibernate is not managing this view projection, so changes are not persisted
     fun findSurnameById(userId: UUID) = userRepository.findSurnameViewById(userId) ?: error("Not found")
+
+    @Transactional
+    fun updateUserAndUserTags(user: User): User {
+        checkNotNull(user.id)
+        val userEntity = userRepository.findById(user.id).getOrNull() ?: error("User does not exist!")
+
+        userEntity.apply {
+            updateProperties(user = user)
+            updateExistingTags(newTags = user.tags)
+            addTagsWithNullId(newTags = user.tags)
+        }
+
+        return userRepository.findOneFullById(user.id)?.toModel() ?: error("User does not exist!")
+    }
+}
+
+private fun UserEntity.updateProperties(user: User) = apply {
+    name = user.firstName
+    surname = user.surname
+}
+
+private fun UserEntity.updateExistingTags(newTags: Set<Tag>) {
+    val alreadyExistingTagsById = tags.associateBy { it.id!! }
+    newTags.forEach { updatedTag ->
+        val alreadyExistingTag = alreadyExistingTagsById[updatedTag.id]
+        alreadyExistingTag?.apply {
+            color = updatedTag.color
+            name = updatedTag.name
+        }
+    }
+}
+
+private fun UserEntity.addTagsWithNullId(newTags: Set<Tag>) {
+    val tagsWithoutId = newTags
+        .filter { it.id == null }
+        .map { it.toEntity(user = this) }
+
+    tags.addAll(tagsWithoutId)
 }
